@@ -9,6 +9,7 @@ import io.ktor.http.cio.websocket.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.sessions.*
+import io.ktor.util.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.channels.consumeEach
 import java.lang.Exception
@@ -44,7 +45,12 @@ fun Route.chatSocket(roomController: RoomController) {
             roomController.tryDisconnect(session.username)
         }
     }
+    intercept(ApplicationCallPipeline.Features){
+        val username = call.parameters["username"]?:"Guest"
+        call.sessions.set(ChatSession(username, generateNonce()))
+    }
 }
+
 
 fun Route.getAllMessages(roomController: RoomController) {
     get("/messages") {
